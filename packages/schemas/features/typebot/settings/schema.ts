@@ -1,6 +1,6 @@
 import { z } from '../../../zod'
 import { rememberUserStorages } from './constants'
-import { whatsAppSettingsSchema } from '../../whatsapp'
+import { whatsAppSettingsSchema, whatsAppCloudApiSettingsSchema } from '../../whatsapp'
 
 const generalSettings = z.object({
   isBrandingEnabled: z.boolean().optional(),
@@ -39,6 +39,7 @@ export const settingsSchema = z
     typingEmulation: typingEmulation.optional(),
     metadata: metadataSchema.optional(),
     whatsApp: whatsAppSettingsSchema.optional(),
+    whatsAppCloudApi: whatsAppCloudApiSettingsSchema.optional(),
     publicShare: z
       .object({
         isEnabled: z.boolean().optional(),

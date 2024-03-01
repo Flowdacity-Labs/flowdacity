@@ -13,6 +13,7 @@ import {
   CodeIcon,
   LockedIcon,
   MoreVerticalIcon,
+  WhatsappIcon,
 } from '@/components/icons'
 import { Settings } from '@typebot.io/schemas'
 import React from 'react'
@@ -21,6 +22,7 @@ import { MetadataForm } from './MetadataForm'
 import { TypingEmulationForm } from './TypingEmulationForm'
 import { useTypebot } from '@/features/editor/providers/TypebotProvider'
 import { SecurityForm } from './SecurityForm'
+import { WhatsappCloudProviderForm } from './WhatsappCloudProviderForm'
 
 export const SettingsSideMenu = () => {
   const { typebot, updateTypebot } = useTypebot()
@@ -37,6 +39,14 @@ export const SettingsSideMenu = () => {
     typebot &&
     updateTypebot({
       updates: { settings: { ...typebot.settings, security } },
+    })
+
+  const updateWhatsappCloudApi = (
+    whatsAppCloudApi: Settings['whatsAppCloudApi']
+  ) =>
+    typebot &&
+    updateTypebot({
+      updates: { settings: { ...typebot.settings, whatsAppCloudApi } },
     })
 
   const handleGeneralSettingsChange = (general: Settings['general']) =>
@@ -129,6 +139,23 @@ export const SettingsSideMenu = () => {
                 typebotName={typebot.name}
                 metadata={typebot.settings.metadata}
                 onMetadataChange={handleMetadataChange}
+              />
+            )}
+          </AccordionPanel>
+        </AccordionItem>
+        <AccordionItem>
+          <AccordionButton py={6}>
+            <HStack flex="1" pl={2}>
+              <WhatsappIcon />
+              <Heading fontSize="lg">Whatsapp Cloud API</Heading>
+            </HStack>
+            <AccordionIcon />
+          </AccordionButton>
+          <AccordionPanel pb={4} px="6">
+            {typebot && (
+              <WhatsappCloudProviderForm
+                whatsAppCloudApi={typebot.settings.whatsAppCloudApi}
+                onUpdate={updateWhatsappCloudApi}
               />
             )}
           </AccordionPanel>
