@@ -216,8 +216,15 @@ export const whatsAppSettingsSchema = z.object({
 export const whatsAppCloudApiSettingsSchema = z.object({
   baseUrl: z.string()
     .optional()
-    .describe('Base URL of the WhatsApp Cloud API')
-    .default('https://graph.facebook.com')
+    .describe('Base URL of the WhatsApp Cloud API'),
+  previewPhoneNumber: z.string()
+    .optional()
+    .describe('Phone number to send preview messages'),
+  systemUserAccessToken: z.string()
+    .optional()
+    .describe('The system user token used to send WhatsApp messages'),
+  isEnabled: z.boolean().optional(),
+
 })
 
 export const defaultSessionExpiryTimeout = 4
