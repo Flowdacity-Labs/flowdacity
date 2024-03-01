@@ -11,19 +11,23 @@ const inputSchema = z.object({
   credentialsId: z.string().optional(),
   systemToken: z.string().optional(),
   phoneNumberId: z.string().optional(),
+  baseUrl: z.string().optional(),
 })
 
 export const getPhoneNumber = authenticatedProcedure
   .input(inputSchema)
   .query(async ({ input, ctx: { user } }) => {
     const credentials = await getCredentials(user.id, input)
+    const baseUrl = input.baseUrl
     if (!credentials)
       throw new TRPCError({
         code: 'NOT_FOUND',
         message: 'Credentials not found',
       })
+    const whatsAppCloudApiBaseUrl =
+      baseUrl && baseUrl.trim() !== '' ? baseUrl : env.WHATSAPP_CLOUD_API_URL
     const { display_phone_number } = (await got(
-      `${env.WHATSAPP_CLOUD_API_URL}/v17.0/${credentials.phoneNumberId}`,
+      `${whatsAppCloudApiBaseUrl}/v17.0/${credentials.phoneNumberId}`,
       {
         headers: {
           Authorization: `Bearer ${credentials.systemUserAccessToken}`,

@@ -3,15 +3,20 @@ import got from 'got'
 
 type Props = {
   mediaId: string
-  systemUserAccessToken: string
+  systemUserAccessToken: string,
+  baseUrl?: string
 }
 
 export const downloadMedia = async ({
   mediaId,
   systemUserAccessToken,
+  baseUrl
 }: Props): Promise<{ file: Buffer; mimeType: string }> => {
+
+  const whatsAppCloudApiBaseUrl = baseUrl && baseUrl.trim() !== '' ? baseUrl : env.WHATSAPP_CLOUD_API_URL;
+
   const { body } = await got.get({
-    url: `${env.WHATSAPP_CLOUD_API_URL}/v17.0/${mediaId}`,
+    url: `${whatsAppCloudApiBaseUrl}/v17.0/${mediaId}`,
     headers: {
       Authorization: `Bearer ${systemUserAccessToken}`,
     },

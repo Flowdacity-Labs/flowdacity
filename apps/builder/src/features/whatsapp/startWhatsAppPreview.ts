@@ -10,7 +10,7 @@ import { restartSession } from '@typebot.io/bot-engine/queries/restartSession'
 import { sendChatReplyToWhatsApp } from '@typebot.io/bot-engine/whatsapp/sendChatReplyToWhatsApp'
 import { sendWhatsAppMessage } from '@typebot.io/bot-engine/whatsapp/sendWhatsAppMessage'
 import { isReadTypebotForbidden } from '../typebot/helpers/isReadTypebotForbidden'
-import { SessionState, startFromSchema } from '@typebot.io/schemas'
+import { SessionState, startFromSchema, Settings } from '@typebot.io/schemas'
 
 export const startWhatsAppPreview = authenticatedProcedure
   .meta({
@@ -57,6 +57,7 @@ export const startWhatsAppPreview = authenticatedProcedure
       },
       select: {
         id: true,
+        settings: true,
         workspace: {
           select: {
             isSuspended: true,
@@ -82,6 +83,9 @@ export const startWhatsAppPreview = authenticatedProcedure
       throw new TRPCError({ code: 'NOT_FOUND', message: 'Typebot not found' })
 
     const sessionId = `wa-preview-${to}`
+
+    console.log('Starting WhatsApp preview')
+    console.log('Typebot ID:', existingTypebot)
 
     const existingSession = await prisma.chatSession.findFirst({
       where: {
@@ -132,6 +136,9 @@ export const startWhatsAppPreview = authenticatedProcedure
         credentials: {
           phoneNumberId: env.WHATSAPP_PREVIEW_FROM_PHONE_NUMBER_ID,
           systemUserAccessToken: env.META_SYSTEM_USER_TOKEN,
+          baseUrl:
+            (existingTypebot.settings as Settings)?.whatsAppCloudApi?.baseUrl ??
+            '',
         },
         state: newSessionState,
       })
@@ -166,6 +173,9 @@ export const startWhatsAppPreview = authenticatedProcedure
             phoneNumberId: env.WHATSAPP_PREVIEW_FROM_PHONE_NUMBER_ID,
             systemUserAccessToken: env.META_SYSTEM_USER_TOKEN,
           },
+          baseUrl:
+            (existingTypebot.settings as Settings)?.whatsAppCloudApi?.baseUrl ??
+            '',
         })
       } catch (err) {
         if (err instanceof HTTPError) console.log(err.response.body)

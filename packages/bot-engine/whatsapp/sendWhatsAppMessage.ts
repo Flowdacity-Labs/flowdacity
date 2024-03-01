@@ -8,16 +8,21 @@ import { env } from '@typebot.io/env'
 type Props = {
   to: string
   message: WhatsAppSendingMessage
-  credentials: WhatsAppCredentials['data']
+  credentials: WhatsAppCredentials['data'],
+  baseUrl?: string
 }
 
 export const sendWhatsAppMessage = async ({
   to,
   message,
   credentials,
-}: Props) =>
+  baseUrl,
+}: Props) => {
+
+  const whatsAppCloudApiBaseUrl = baseUrl && baseUrl.trim() !== '' ? baseUrl : env.WHATSAPP_CLOUD_API_URL;
+
   got.post({
-    url: `${env.WHATSAPP_CLOUD_API_URL}/v17.0/${credentials.phoneNumberId}/messages`,
+    url: `${whatsAppCloudApiBaseUrl}/v17.0/${credentials.phoneNumberId}/messages`,
     headers: {
       Authorization: `Bearer ${credentials.systemUserAccessToken}`,
     },
@@ -27,3 +32,4 @@ export const sendWhatsAppMessage = async ({
       ...message,
     },
   })
+}

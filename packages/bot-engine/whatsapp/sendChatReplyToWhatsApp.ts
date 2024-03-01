@@ -26,7 +26,7 @@ type Props = {
   to: string
   isFirstChatChunk: boolean
   typingEmulation: SessionState['typingEmulation']
-  credentials: WhatsAppCredentials['data']
+  credentials: WhatsAppCredentials['data'] & { baseUrl?: string }
   state: SessionState
 } & Pick<ContinueChatResponse, 'messages' | 'input' | 'clientSideActions'>
 
@@ -100,8 +100,8 @@ export const sendChatReplyToWhatsApp = async ({
         i === 0 &&
         (typingEmulation?.isDisabledOnFirstMessage ??
           defaultSettings.typingEmulation.isDisabledOnFirstMessage)
-      ? 0
-      : getTypingDuration({
+        ? 0
+        : getTypingDuration({
           message: whatsAppMessage,
           typingEmulation,
         })
@@ -112,6 +112,7 @@ export const sendChatReplyToWhatsApp = async ({
         to,
         message: whatsAppMessage,
         credentials,
+        baseUrl: credentials?.baseUrl ?? '',
       })
       sentMessages.push(whatsAppMessage)
       const clientSideActionsAfterMessage =
@@ -158,15 +159,16 @@ export const sendChatReplyToWhatsApp = async ({
         const typingDuration = lastSentMessageIsMedia
           ? messageAfterMediaTimeout
           : getTypingDuration({
-              message,
-              typingEmulation,
-            })
+            message,
+            typingEmulation,
+          })
         if (typingDuration)
           await new Promise((resolve) => setTimeout(resolve, typingDuration))
         await sendWhatsAppMessage({
           to,
           message,
           credentials,
+          baseUrl: credentials.baseUrl ?? ''
         })
       } catch (err) {
         Sentry.captureException(err, { extra: { message } })
@@ -217,43 +219,44 @@ const isLastMessageIncludedInInput = (
 }
 
 const executeClientSideAction =
-  (context: { to: string; credentials: WhatsAppCredentials['data'] }) =>
-  async (
-    clientSideAction: NonNullable<
-      ContinueChatResponse['clientSideActions']
-    >[number]
-  ): Promise<{ replyToSend: string | undefined } | void> => {
-    if ('wait' in clientSideAction) {
-      await new Promise((resolve) =>
-        setTimeout(
-          resolve,
-          Math.min(clientSideAction.wait.secondsToWaitFor, 10) * 1000
+  (context: { to: string; credentials: WhatsAppCredentials['data'] & { baseUrl?: string } }) =>
+    async (
+      clientSideAction: NonNullable<
+        ContinueChatResponse['clientSideActions']
+      >[number]
+    ): Promise<{ replyToSend: string | undefined } | void> => {
+      if ('wait' in clientSideAction) {
+        await new Promise((resolve) =>
+          setTimeout(
+            resolve,
+            Math.min(clientSideAction.wait.secondsToWaitFor, 10) * 1000
+          )
         )
-      )
-      if (!clientSideAction.expectsDedicatedReply) return
-      return {
-        replyToSend: undefined,
+        if (!clientSideAction.expectsDedicatedReply) return
+        return {
+          replyToSend: undefined,
+        }
+      }
+      if ('redirect' in clientSideAction && clientSideAction.redirect.url) {
+        const message = {
+          type: 'text',
+          text: {
+            body: clientSideAction.redirect.url,
+            preview_url: true,
+          },
+        } satisfies WhatsAppSendingMessage
+        try {
+          await sendWhatsAppMessage({
+            to: context.to,
+            message,
+            credentials: context.credentials,
+            baseUrl: context.credentials.baseUrl
+          })
+        } catch (err) {
+          Sentry.captureException(err, { extra: { message } })
+          console.log('Failed to send message:', JSON.stringify(message, null, 2))
+          if (err instanceof HTTPError)
+            console.log('HTTPError', err.response.statusCode, err.response.body)
+        }
       }
     }
-    if ('redirect' in clientSideAction && clientSideAction.redirect.url) {
-      const message = {
-        type: 'text',
-        text: {
-          body: clientSideAction.redirect.url,
-          preview_url: true,
-        },
-      } satisfies WhatsAppSendingMessage
-      try {
-        await sendWhatsAppMessage({
-          to: context.to,
-          message,
-          credentials: context.credentials,
-        })
-      } catch (err) {
-        Sentry.captureException(err, { extra: { message } })
-        console.log('Failed to send message:', JSON.stringify(message, null, 2))
-        if (err instanceof HTTPError)
-          console.log('HTTPError', err.response.statusCode, err.response.body)
-      }
-    }
-  }

@@ -1,4 +1,4 @@
-import { SessionState } from '@typebot.io/schemas'
+import { SessionState, Settings } from '@typebot.io/schemas'
 import {
   WhatsAppCredentials,
   WhatsAppIncomingMessage,
@@ -47,6 +47,32 @@ export const resumeWhatsAppFlow = async ({
 
   const { typebot } = session?.state.typebotsQueue[0] ?? {}
 
+  const existingTypebot = await prisma.typebot.findFirst({
+    where: {
+      id: typebot?.id,
+    },
+    select: {
+      id: true,
+      settings: true,
+      workspace: {
+        select: {
+          isSuspended: true,
+          isPastDue: true,
+          members: {
+            select: {
+              userId: true,
+            },
+          },
+        },
+      },
+      collaborators: {
+        select: {
+          userId: true,
+        },
+      },
+    },
+  })
+
   const credentials = await getCredentials({ credentialsId, isPreview })
 
   if (!credentials) {
@@ -78,17 +104,17 @@ export const resumeWhatsAppFlow = async ({
   const resumeResponse =
     session && !isSessionExpired
       ? await continueBotFlow(reply, {
-          version: 2,
-          state: { ...session.state, whatsApp: { contact } },
-        })
+        version: 2,
+        state: { ...session.state, whatsApp: { contact } },
+      })
       : workspaceId
-      ? await startWhatsAppSession({
+        ? await startWhatsAppSession({
           incomingMessage: reply,
           workspaceId,
           credentials: { ...credentials, id: credentialsId as string },
           contact,
         })
-      : { error: 'workspaceId not found' }
+        : { error: 'workspaceId not found' }
 
   if ('error' in resumeResponse) {
     console.log('Chat not starting:', resumeResponse.error)
@@ -114,7 +140,7 @@ export const resumeWhatsAppFlow = async ({
     isFirstChatChunk,
     typingEmulation: newSessionState.typingEmulation,
     clientSideActions,
-    credentials,
+    credentials: { ...credentials, baseUrl: (existingTypebot?.settings as Settings)?.whatsAppCloudApi?.baseUrl },
     state: newSessionState,
   })
 

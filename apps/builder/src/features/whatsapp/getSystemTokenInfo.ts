@@ -10,6 +10,7 @@ import { env } from '@typebot.io/env'
 const inputSchema = z.object({
   token: z.string().optional(),
   credentialsId: z.string().optional(),
+  baseUrl: z.string().optional(),
 })
 
 export const getSystemTokenInfo = authenticatedProcedure
@@ -21,15 +22,20 @@ export const getSystemTokenInfo = authenticatedProcedure
         message: 'Either token or credentialsId must be provided',
       })
     const credentials = await getCredentials(user.id, input)
+    const baseUrl = input.baseUrl
     if (!credentials)
       throw new TRPCError({
         code: 'NOT_FOUND',
         message: 'Credentials not found',
       })
+
+    const whatsAppCloudApiBaseUrl =
+      baseUrl && baseUrl.trim() !== '' ? baseUrl : env.WHATSAPP_CLOUD_API_URL
+
     const {
       data: { expires_at, scopes, app_id, application },
     } = (await got(
-      `${env.WHATSAPP_CLOUD_API_URL}/v17.0/debug_token?input_token=${credentials.systemUserAccessToken}`,
+      `${whatsAppCloudApiBaseUrl}/v17.0/debug_token?input_token=${credentials.systemUserAccessToken}`,
       {
         headers: {
           Authorization: `Bearer ${credentials.systemUserAccessToken}`,
