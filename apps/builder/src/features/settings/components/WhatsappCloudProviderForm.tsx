@@ -47,7 +47,7 @@ export const WhatsappCloudProviderForm = ({
             pr="16"
             value={whatsAppCloudApi?.baseUrl ?? ''}
             onChange={(event) =>
-              handlewhatsAppCloudApiChange(event.target.value)
+              handleWhatsAppCloudApiChange(event.target.value)
             }
           />
         </InputGroup>
