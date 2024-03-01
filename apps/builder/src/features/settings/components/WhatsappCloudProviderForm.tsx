@@ -22,7 +22,7 @@ export const WhatsappCloudProviderForm = ({
   whatsAppCloudApi,
   onUpdate,
 }: Props) => {
-  const handlewhatsAppCloudApiChange = (baseUrl: string) =>
+  const handleWhatsAppCloudApiChange = (baseUrl: string) =>
     onUpdate({ ...whatsAppCloudApi, baseUrl })
 
   return (
