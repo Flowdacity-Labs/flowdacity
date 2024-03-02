@@ -3,6 +3,7 @@ import { z } from 'zod'
 import got from 'got'
 import { TRPCError } from '@trpc/server'
 import { WhatsAppCredentials } from '@typebot.io/schemas/features/whatsapp'
+import { Settings } from '@typebot.io/schemas'
 import prisma from '@typebot.io/lib/prisma'
 import { decrypt } from '@typebot.io/lib/api/encryption/decrypt'
 import { env } from '@typebot.io/env'
@@ -10,7 +11,7 @@ import { env } from '@typebot.io/env'
 const inputSchema = z.object({
   token: z.string().optional(),
   credentialsId: z.string().optional(),
-  baseUrl: z.string().optional(),
+  typebotId: z.string().optional(),
 })
 
 export const getSystemTokenInfo = authenticatedProcedure
@@ -22,15 +23,33 @@ export const getSystemTokenInfo = authenticatedProcedure
         message: 'Either token or credentialsId must be provided',
       })
     const credentials = await getCredentials(user.id, input)
-    const baseUrl = input.baseUrl
     if (!credentials)
       throw new TRPCError({
         code: 'NOT_FOUND',
         message: 'Credentials not found',
       })
 
-    const whatsAppCloudApiBaseUrl =
-      baseUrl && baseUrl.trim() !== '' ? baseUrl : env.WHATSAPP_CLOUD_API_URL
+    const existingTypebot = await prisma.typebot.findFirst({
+      where: {
+        id: input.typebotId,
+      },
+      select: {
+        id: true,
+        settings: true,
+      },
+    })
+
+    if (!existingTypebot?.id) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Typebot not found',
+      })
+    }
+
+    const whatsAppCloudApiBaseUrl = (existingTypebot.settings as Settings)
+      ?.whatsAppCloudApi?.isEnabled
+      ? (existingTypebot.settings as Settings)?.whatsAppCloudApi?.baseUrl
+      : env.WHATSAPP_CLOUD_API_URL
 
     const {
       data: { expires_at, scopes, app_id, application },

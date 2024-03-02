@@ -54,26 +54,29 @@ export const resumeWhatsAppFlow = async ({
     select: {
       id: true,
       settings: true,
-      workspace: {
-        select: {
-          isSuspended: true,
-          isPastDue: true,
-          members: {
-            select: {
-              userId: true,
-            },
-          },
-        },
-      },
-      collaborators: {
-        select: {
-          userId: true,
-        },
-      },
     },
   })
 
-  const credentials = await getCredentials({ credentialsId, isPreview })
+  if (!existingTypebot?.id) {
+    console.error('Typebot not found')
+    return {
+      message: 'Message received',
+    }
+  }
+
+  const credentials = await getCredentials({
+    credentialsId,
+    isPreview,
+    typebot: {
+      ...existingTypebot,
+      settings: existingTypebot.settings as {
+        baseUrl?: string | undefined
+        previewPhoneNumber?: string | undefined
+        systemUserAccessToken?: string | undefined
+        isEnabled?: boolean | undefined
+      },
+    },
+  })
 
   if (!credentials) {
     console.error('Could not find credentials')
@@ -104,17 +107,17 @@ export const resumeWhatsAppFlow = async ({
   const resumeResponse =
     session && !isSessionExpired
       ? await continueBotFlow(reply, {
-        version: 2,
-        state: { ...session.state, whatsApp: { contact } },
-      })
+          version: 2,
+          state: { ...session.state, whatsApp: { contact } },
+        })
       : workspaceId
-        ? await startWhatsAppSession({
+      ? await startWhatsAppSession({
           incomingMessage: reply,
           workspaceId,
           credentials: { ...credentials, id: credentialsId as string },
           contact,
         })
-        : { error: 'workspaceId not found' }
+      : { error: 'workspaceId not found' }
 
   if ('error' in resumeResponse) {
     console.log('Chat not starting:', resumeResponse.error)
@@ -140,7 +143,11 @@ export const resumeWhatsAppFlow = async ({
     isFirstChatChunk,
     typingEmulation: newSessionState.typingEmulation,
     clientSideActions,
-    credentials: { ...credentials, baseUrl: (existingTypebot?.settings as Settings)?.whatsAppCloudApi?.baseUrl },
+    credentials: {
+      ...credentials,
+      baseUrl: (existingTypebot?.settings as Settings)?.whatsAppCloudApi
+        ?.baseUrl,
+    },
     state: newSessionState,
   })
 
@@ -203,19 +210,29 @@ const getIncomingMessageContent = async ({
 const getCredentials = async ({
   credentialsId,
   isPreview,
+  typebot,
 }: {
   credentialsId?: string
   isPreview: boolean
+  typebot?: {
+    id: string
+    settings: NonNullable<Settings['whatsAppCloudApi']>
+  }
 }): Promise<WhatsAppCredentials['data'] | undefined> => {
   if (isPreview) {
-    if (
-      !env.META_SYSTEM_USER_TOKEN ||
-      !env.WHATSAPP_PREVIEW_FROM_PHONE_NUMBER_ID
-    )
-      return
+    const whatsAppPreviewPhoneNumberId = typebot?.settings?.isEnabled
+      ? typebot.settings.previewPhoneNumber
+      : env.WHATSAPP_PREVIEW_FROM_PHONE_NUMBER_ID
+
+    const whatsAppSystemUserToken = typebot?.settings?.isEnabled
+      ? typebot.settings.systemUserAccessToken
+      : env.META_SYSTEM_USER_TOKEN
+
+    if (!whatsAppSystemUserToken || !whatsAppPreviewPhoneNumberId) return
+
     return {
-      systemUserAccessToken: env.META_SYSTEM_USER_TOKEN,
-      phoneNumberId: env.WHATSAPP_PREVIEW_FROM_PHONE_NUMBER_ID,
+      systemUserAccessToken: whatsAppSystemUserToken,
+      phoneNumberId: whatsAppPreviewPhoneNumberId,
     }
   }
 

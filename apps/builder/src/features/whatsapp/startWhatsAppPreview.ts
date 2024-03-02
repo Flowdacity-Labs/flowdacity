@@ -40,17 +40,6 @@ export const startWhatsAppPreview = authenticatedProcedure
     })
   )
   .mutation(async ({ input: { to, typebotId, startFrom }, ctx: { user } }) => {
-    if (
-      !env.WHATSAPP_PREVIEW_FROM_PHONE_NUMBER_ID ||
-      !env.META_SYSTEM_USER_TOKEN ||
-      !env.WHATSAPP_PREVIEW_TEMPLATE_NAME
-    )
-      throw new TRPCError({
-        code: 'BAD_REQUEST',
-        message:
-          'Missing WHATSAPP_PREVIEW_FROM_PHONE_NUMBER_ID or META_SYSTEM_USER_TOKEN or WHATSAPP_PREVIEW_TEMPLATE_NAME env variables',
-      })
-
     const existingTypebot = await prisma.typebot.findFirst({
       where: {
         id: typebotId,
@@ -82,10 +71,40 @@ export const startWhatsAppPreview = authenticatedProcedure
     )
       throw new TRPCError({ code: 'NOT_FOUND', message: 'Typebot not found' })
 
-    const sessionId = `wa-preview-${to}`
+    const whatsAppPreviewPhoneNumberId = (existingTypebot.settings as Settings)
+      ?.whatsAppCloudApi?.isEnabled
+      ? (existingTypebot.settings as Settings)?.whatsAppCloudApi
+          ?.previewPhoneNumber
+      : env.WHATSAPP_PREVIEW_FROM_PHONE_NUMBER_ID
 
-    console.log('Starting WhatsApp preview')
-    console.log('Typebot ID:', existingTypebot)
+    const whatsAppSystemUserToken = (existingTypebot.settings as Settings)
+      ?.whatsAppCloudApi?.isEnabled
+      ? (existingTypebot.settings as Settings)?.whatsAppCloudApi
+          ?.systemUserAccessToken
+      : env.META_SYSTEM_USER_TOKEN
+
+    const whatsAppPreviewTemplateName = (existingTypebot.settings as Settings)
+      ?.whatsAppCloudApi?.isEnabled
+      ? 'hello_world'
+      : env.WHATSAPP_PREVIEW_TEMPLATE_NAME
+
+    const whatsAppCloudApiBaseUrl = (existingTypebot.settings as Settings)
+      ?.whatsAppCloudApi?.isEnabled
+      ? (existingTypebot.settings as Settings)?.whatsAppCloudApi?.baseUrl
+      : env.WHATSAPP_CLOUD_API_URL
+
+    if (
+      !whatsAppPreviewPhoneNumberId ||
+      !whatsAppSystemUserToken ||
+      !whatsAppPreviewTemplateName
+    )
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message:
+          'Missing required settings for WhatsApp Cloud API. Please check your settings.',
+      })
+
+    const sessionId = `wa-preview-${to}`
 
     const existingSession = await prisma.chatSession.findFirst({
       where: {
@@ -134,11 +153,9 @@ export const startWhatsAppPreview = authenticatedProcedure
         clientSideActions,
         isFirstChatChunk: true,
         credentials: {
-          phoneNumberId: env.WHATSAPP_PREVIEW_FROM_PHONE_NUMBER_ID,
-          systemUserAccessToken: env.META_SYSTEM_USER_TOKEN,
-          baseUrl:
-            (existingTypebot.settings as Settings)?.whatsAppCloudApi?.baseUrl ??
-            '',
+          phoneNumberId: whatsAppPreviewPhoneNumberId,
+          systemUserAccessToken: whatsAppSystemUserToken,
+          baseUrl: whatsAppCloudApiBaseUrl,
         },
         state: newSessionState,
       })
@@ -166,16 +183,14 @@ export const startWhatsAppPreview = authenticatedProcedure
               language: {
                 code: env.WHATSAPP_PREVIEW_TEMPLATE_LANG,
               },
-              name: env.WHATSAPP_PREVIEW_TEMPLATE_NAME,
+              name: whatsAppPreviewTemplateName,
             },
           },
           credentials: {
-            phoneNumberId: env.WHATSAPP_PREVIEW_FROM_PHONE_NUMBER_ID,
-            systemUserAccessToken: env.META_SYSTEM_USER_TOKEN,
+            phoneNumberId: whatsAppPreviewPhoneNumberId,
+            systemUserAccessToken: whatsAppSystemUserToken,
           },
-          baseUrl:
-            (existingTypebot.settings as Settings)?.whatsAppCloudApi?.baseUrl ??
-            '',
+          baseUrl: whatsAppCloudApiBaseUrl,
         })
       } catch (err) {
         if (err instanceof HTTPError) console.log(err.response.body)
