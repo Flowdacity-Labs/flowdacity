@@ -8,8 +8,8 @@ import {
   Input,
   InputGroup,
   FormHelperText,
-  Textarea,
 } from '@chakra-ui/react'
+import { Textarea } from '@/components/inputs'
 import { Settings } from '@typebot.io/schemas'
 import React from 'react'
 import { MoreInfoTooltip } from '@/components/MoreInfoTooltip'
@@ -39,6 +39,7 @@ export const WhatsappCloudProviderForm = ({
           </AlertDescription>
         </Box>
       </Alert>
+
       <FormControl>
         <FormLabel display="flex" flexShrink={0} gap="1" mr="0" mb="4">
           Whatsapp Cloud Provider
@@ -56,10 +57,8 @@ export const WhatsappCloudProviderForm = ({
             }
           />
         </InputGroup>
-        {/* <FormHelperText>
-          Used when interacting with the Typebot API.
-        </FormHelperText> */}
       </FormControl>
+
       <FormControl>
         <FormLabel display="flex" flexShrink={0} gap="1" mr="0" mb="4">
           Whatsapp Preview Phone Number
@@ -80,26 +79,15 @@ export const WhatsappCloudProviderForm = ({
         </InputGroup>
         <FormHelperText>Used during Preview (Testing).</FormHelperText>
       </FormControl>
-      <FormControl>
-        <FormLabel display="flex" flexShrink={0} gap="1" mr="0" mb="4">
-          Authorization Token
-          <MoreInfoTooltip>
-            The system user token used to send WhatsApp messages
-          </MoreInfoTooltip>
-        </FormLabel>
-        <InputGroup>
-          <Textarea
-            onChange={(event) =>
-              handleSystemUserAccessTokenChange(event.target.value)
-            }
-            value={whatsAppCloudApi?.systemUserAccessToken ?? ''}
-            minH={'150px'}
-          />
-        </InputGroup>
-        <FormHelperText>
-          Depending on the provider, this might be call System token
-        </FormHelperText>
-      </FormControl>
+
+      <Textarea
+        onChange={handleSystemUserAccessTokenChange}
+        defaultValue={whatsAppCloudApi?.systemUserAccessToken ?? ''}
+        helperText="Depending on the provider, this might be call System token"
+        label="Authorization Token"
+        moreInfoTooltip="The system user token used to send WhatsApp messages"
+        withVariableButton={false}
+      />
     </Stack>
   )
 }
