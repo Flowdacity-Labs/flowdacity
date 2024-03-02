@@ -13,6 +13,7 @@ import { Textarea } from '@/components/inputs'
 import { Settings } from '@typebot.io/schemas'
 import React from 'react'
 import { MoreInfoTooltip } from '@/components/MoreInfoTooltip'
+import { SwitchWithRelatedSettings } from '@/components/SwitchWithRelatedSettings'
 
 type Props = {
   whatsAppCloudApi: Settings['whatsAppCloudApi']
@@ -23,10 +24,15 @@ export const WhatsappCloudProviderForm = ({
   whatsAppCloudApi,
   onUpdate,
 }: Props) => {
+  const toggleWhatsAppCloudApiSettings = (isEnabled: boolean) =>
+    onUpdate({ ...whatsAppCloudApi, isEnabled })
+
   const handleWhatsAppCloudApiChange = (baseUrl: string) =>
     onUpdate({ ...whatsAppCloudApi, baseUrl })
+
   const handleWhatsAppPreviewPhoneNumberChange = (previewPhoneNumber: string) =>
     onUpdate({ ...whatsAppCloudApi, previewPhoneNumber })
+
   const handleSystemUserAccessTokenChange = (systemUserAccessToken: string) =>
     onUpdate({ ...whatsAppCloudApi, systemUserAccessToken })
 
@@ -39,55 +45,61 @@ export const WhatsappCloudProviderForm = ({
           </AlertDescription>
         </Box>
       </Alert>
+      <SwitchWithRelatedSettings
+        label={'Enable Settings'}
+        moreInfoContent="If enabled, the settings below will be used to send Whatsapp messages in both preview and live mode."
+        initialValue={whatsAppCloudApi?.isEnabled ?? false}
+        onCheckChange={toggleWhatsAppCloudApiSettings}
+      >
+        <FormControl>
+          <FormLabel display="flex" flexShrink={0} gap="1" mr="0" mb="4">
+            Whatsapp Cloud Provider
+            <MoreInfoTooltip>
+              Base URL of the cloud provider that will be used to send Whatsapp
+            </MoreInfoTooltip>
+          </FormLabel>
+          <InputGroup>
+            <Input
+              type={'text'}
+              pr="16"
+              value={whatsAppCloudApi?.baseUrl ?? ''}
+              onChange={(event) =>
+                handleWhatsAppCloudApiChange(event.target.value)
+              }
+            />
+          </InputGroup>
+        </FormControl>
 
-      <FormControl>
-        <FormLabel display="flex" flexShrink={0} gap="1" mr="0" mb="4">
-          Whatsapp Cloud Provider
-          <MoreInfoTooltip>
-            Base URL of the cloud provider that will be used to send Whatsapp
-          </MoreInfoTooltip>
-        </FormLabel>
-        <InputGroup>
-          <Input
-            type={'text'}
-            pr="16"
-            value={whatsAppCloudApi?.baseUrl ?? ''}
-            onChange={(event) =>
-              handleWhatsAppCloudApiChange(event.target.value)
-            }
-          />
-        </InputGroup>
-      </FormControl>
+        <FormControl>
+          <FormLabel display="flex" flexShrink={0} gap="1" mr="0" mb="4">
+            Whatsapp Preview Phone Number
+            <MoreInfoTooltip>
+              The phone number/ID from which the message will be sent during
+              testing
+            </MoreInfoTooltip>
+          </FormLabel>
+          <InputGroup>
+            <Input
+              type={'text'}
+              pr="16"
+              value={whatsAppCloudApi?.previewPhoneNumber ?? ''}
+              onChange={(event) =>
+                handleWhatsAppPreviewPhoneNumberChange(event.target.value)
+              }
+            />
+          </InputGroup>
+          <FormHelperText>Used during Preview (Testing).</FormHelperText>
+        </FormControl>
 
-      <FormControl>
-        <FormLabel display="flex" flexShrink={0} gap="1" mr="0" mb="4">
-          Whatsapp Preview Phone Number
-          <MoreInfoTooltip>
-            The phone number/ID from which the message will be sent during
-            testing
-          </MoreInfoTooltip>
-        </FormLabel>
-        <InputGroup>
-          <Input
-            type={'text'}
-            pr="16"
-            value={whatsAppCloudApi?.previewPhoneNumber ?? ''}
-            onChange={(event) =>
-              handleWhatsAppPreviewPhoneNumberChange(event.target.value)
-            }
-          />
-        </InputGroup>
-        <FormHelperText>Used during Preview (Testing).</FormHelperText>
-      </FormControl>
-
-      <Textarea
-        onChange={handleSystemUserAccessTokenChange}
-        defaultValue={whatsAppCloudApi?.systemUserAccessToken ?? ''}
-        helperText="Depending on the provider, this might be call System token"
-        label="Authorization Token"
-        moreInfoTooltip="The system user token used to send WhatsApp messages"
-        withVariableButton={false}
-      />
+        <Textarea
+          onChange={handleSystemUserAccessTokenChange}
+          defaultValue={whatsAppCloudApi?.systemUserAccessToken ?? ''}
+          helperText="Depending on the provider, this might be call System token"
+          label="Authorization Token"
+          moreInfoTooltip="The system user token used to send WhatsApp messages"
+          withVariableButton={false}
+        />
+      </SwitchWithRelatedSettings>
     </Stack>
   )
 }
