@@ -19,7 +19,7 @@
   "[prisma]": {
     "editor.defaultFormatter": "Prisma.prisma"
   },
-  "[typescript]": {
+  "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   }
 }
