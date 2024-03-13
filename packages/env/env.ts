@@ -129,6 +129,13 @@ const githubEnv = {
   },
 }
 
+const twitterEnv = {
+  server: {
+    TWITTER_CLIENT_ID: z.string().min(1).optional(),
+    TWITTER_CLIENT_SECRET: z.string().min(1).optional(),
+  },
+}
+
 const facebookEnv = {
   server: {
     FACEBOOK_CLIENT_ID: z.string().min(1).optional(),
@@ -307,6 +314,7 @@ const whatsAppEnv = {
       .url()
       .optional()
       .default('https://graph.facebook.com'),
+    WHATSAPP_INTERACTIVE_GROUP_SIZE: z.coerce.number().optional().default(3),
   },
 }
 
@@ -377,6 +385,7 @@ export const env = createEnv({
   server: {
     ...baseEnv.server,
     ...githubEnv.server,
+    ...twitterEnv.server,
     ...facebookEnv.server,
     ...smtpEnv.server,
     ...googleEnv.server,

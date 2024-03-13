@@ -374,6 +374,17 @@ export const GithubIcon = (props: IconProps) => (
   </Icon>
 )
 
+export const TwitterIcon = (props: IconProps) => (
+  <Icon viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M23 2.5a9.25 9.25 0 0 1-2.675.733 4.625 4.625 0 0 0 2.025-2.55 9.25 9.25 0 0 1-2.925 1.125 4.625 4.625 0 0 0-7.875 4.225 13.125 13.125 0 0 1-9.525-4.825 4.625 4.625 0 0 0 1.425 6.15 4.625 4.625 0 0 1-2.1-.575v.05a4.625 4.625 0 0 0 3.7 4.55 4.625 4.625 0 0 1-2.075.075 4.625 4.625 0 0 0 4.325 3.225 9.25 9.25 0 0 1-5.75 2 13.125 13.125 0 0 0 7.075 2 13.125 13.125 0 0 0 13.125-13.125v-.625A9.25 9.25 0 0 0 23 2.5z"
+      fill={useColorModeValue('#1da1f2', 'white')}
+    />
+  </Icon>
+)
+
 export const UsersIcon = (props: IconProps) => (
   <Icon viewBox="0 0 24 24" {...featherIconsBaseProps} {...props}>
     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -667,5 +678,14 @@ export const WhatsappIcon = (props: IconProps) => (
   <Icon viewBox="0 0 24 24" {...featherIconsBaseProps} {...props}>
     <path d="M21 11.5a8.37 8.37 0 0 1-.9 3.8 8.49 8.49 0 0 1-7.6 4.7 8.37 8.37 0 0 1-3.8-.9L3 21l1.9-5.7a8.37 8.37 0 0 1-.9-3.8 8.49 8.49 0 0 1 4.7-7.6 8.37 8.37 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8Z" />
     <path d="M9.49 10a7.58 7.58 0 0 0 .72 1.42A8 8 0 0 0 14 14.5M9.49 10a7.47 7.47 0 0 1-.4-1.4.51.51 0 0 1 .52-.6h0a.54.54 0 0 1 .51.37l.38 1.13ZM14 14.5a7.8 7.8 0 0 0 1.43.41.51.51 0 0 0 .6-.52h0a.54.54 0 0 0-.37-.51l-1.16-.38Z" />
+  </Icon>
+)
+
+export const RepeatIcon = (props: IconProps) => (
+  <Icon viewBox="0 0 24 24" {...featherIconsBaseProps} {...props}>
+    <path d="m2 9 3-3 3 3" />
+    <path d="M13 18H7a2 2 0 0 1-2-2V6" />
+    <path d="m22 15-3 3-3-3" />
+    <path d="M11 6h6a2 2 0 0 1 2 2v10" />
   </Icon>
 )

@@ -19,6 +19,16 @@ export const createChatCompletion = createAction({
     modelFetchId: 'fetchModels',
   }),
   getSetVariableIds: getChatCompletionSetVarIds,
+  turnableInto: [
+    {
+      blockType: 'open-router',
+    },
+    {
+      blockType: 'together-ai',
+    },
+    { blockType: 'mistral' },
+    { blockType: 'anthropic' },
+  ],
   fetchers: [
     {
       id: 'fetchModels',

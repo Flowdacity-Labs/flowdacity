@@ -67,6 +67,16 @@ export const createChatCompletion = createAction({
   name: 'Create chat completion',
   auth,
   options,
+  turnableInto: [
+    {
+      blockType: 'openai',
+    },
+    {
+      blockType: 'together-ai',
+    },
+    { blockType: 'open-router' },
+    { blockType: 'anthropic' },
+  ],
   getSetVariableIds: (options) =>
     options.responseMapping?.map((res) => res.variableId).filter(isDefined) ??
     [],
