@@ -41,6 +41,7 @@ https://user-images.githubusercontent.com/16015833/168876388-0310678d-080b-4eca-
 Flowdacity makes it easy to create advanced chatbots. It provides the building blocks that are adaptable to any business use case.
 
 **Chat builder** with 34+ building blocks such as:
+
 - 💬 Bubbles: Text, Image / GIF, video, audio, embed.
 - 🔤 Inputs: Text, email, phone number, buttons, picture choice, date picker, payment (Stripe), file picker... inputs
 - 🧠 Logic: Conditional branching, URL redirections, scripting (Javascript), A/B testing
@@ -69,28 +70,27 @@ Built for **developers**:
 - 🔓 No vendor-locking. Features built with flexibility in mind.
 - 💻 Easy-to-use [APIs](https://docs.flowdacity.com/api-reference).
 
-## Getting started with Typebot
+## Getting started with Flowdacity
 
 The easiest way to get started with Flowdacity is with [the official managed service in the Cloud](https://app.flowdacity.com). You'll have high availability, backups, security, and maintenance all managed for you by us
 
-The cloud version can save a substantial amount of developer time and resources. For most sites, this ends up being the best value option and the revenue goes to funding the maintenance and further development of Typebot.
-So you’ll be supporting open source software and getting a great service! 💙
+The cloud version can save a substantial amount of developer time and resources. For most sites, this ends up being the best value option.
 
 ## Support & Community
 
-You'll find many resources to help you get started with Typebot in the [documentation](https://docs.flowdacity.com/).
+You'll find many resources to help you get started with Flowdacity in the [documentation](https://docs.flowdacity.com/).
 
 - Have a question? Join the [Discord server](https://flowdacity.com/discord) and get instant help.
 - Found a bug? [Create an issue](https://github.com/ochui/flowdacity/issues/new)
 
 ### Top contributors
 
-<a href="https://github.com/baptistearno/typebot.io/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=baptistearno/typebot.io" />
+<a href="https://github.com/ochui/flowdacity/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=ochui/flowdacity" />
 </a>
 
 Made with [contrib.rocks](https://contrib.rocks).
 
 ## License
 
-Typebot is open-source under the GNU Affero General Public License Version 3 (AGPLv3). You will find more information about the license and how to comply with it [here](https://docs.flowdacity.com/self-hosting#license-requirements).
+Flowdacity is based on Typebot, open-source under the GNU Affero General Public License Version 3 (AGPLv3).
