@@ -213,6 +213,20 @@ export const whatsAppSettingsSchema = z.object({
     .describe('Expiration delay in hours after latest interaction'),
 })
 
+export const whatsAppCloudApiSettingsSchema = z.object({
+  baseUrl: z.string()
+    .optional()
+    .describe('Base URL of the WhatsApp Cloud API'),
+  previewPhoneNumber: z.string()
+    .optional()
+    .describe('Phone number to send preview messages'),
+  systemUserAccessToken: z.string()
+    .optional()
+    .describe('The system user token used to send WhatsApp messages'),
+  isEnabled: z.boolean().optional(),
+
+})
+
 export const defaultSessionExpiryTimeout = 4
 
 export type WhatsAppIncomingMessage = z.infer<typeof incomingMessageSchema>

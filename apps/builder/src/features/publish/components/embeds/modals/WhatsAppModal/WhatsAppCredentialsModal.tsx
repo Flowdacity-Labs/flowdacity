@@ -42,6 +42,7 @@ import {
 import { env } from '@typebot.io/env'
 import { isEmpty, isNotEmpty } from '@typebot.io/lib/utils'
 import React, { useState } from 'react'
+import { useTypebot } from '@/features/editor/providers/TypebotProvider'
 import { createId } from '@paralleldrive/cuid2'
 
 const steps = [
@@ -65,6 +66,7 @@ export const WhatsAppCredentialsModal = ({
   onNewCredentials,
 }: Props) => {
   const { workspace } = useWorkspace()
+  const { typebot } = useTypebot()
   const { showToast } = useToast()
   const { activeStep, goToNext, goToPrevious, setActiveStep } = useSteps({
     index: 0,
@@ -104,6 +106,7 @@ export const WhatsAppCredentialsModal = ({
     trpc.whatsAppInternal.getSystemTokenInfo.useQuery(
       {
         token: systemUserAccessToken,
+        typebotId: typebot?.id,
       },
       { enabled: isNotEmpty(systemUserAccessToken) }
     )
@@ -136,6 +139,7 @@ export const WhatsAppCredentialsModal = ({
       const { expiresAt, scopes } =
         await trpcVanilla.whatsAppInternal.getSystemTokenInfo.query({
           token: systemUserAccessToken,
+          typebotId: typebot?.id,
         })
       if (expiresAt !== 0) {
         showToast({
@@ -171,6 +175,7 @@ export const WhatsAppCredentialsModal = ({
       const { name } = await trpcVanilla.whatsAppInternal.getPhoneNumber.query({
         systemToken: systemUserAccessToken,
         phoneNumberId,
+        typebotId: typebot?.id,
       })
       setPhoneNumberName(name)
       try {

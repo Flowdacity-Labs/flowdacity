@@ -1,4 +1,4 @@
-import { SessionState } from '@typebot.io/schemas'
+import { SessionState, Settings } from '@typebot.io/schemas'
 import {
   WhatsAppCredentials,
   WhatsAppIncomingMessage,
@@ -41,9 +41,42 @@ export const resumeWhatsAppFlow = async ({
     }
   }
 
+  const session = await getSession(sessionId)
+
   const isPreview = workspaceId === undefined || credentialsId === undefined
 
-  const credentials = await getCredentials({ credentialsId, isPreview })
+  const { typebot } = session?.state.typebotsQueue[0] ?? {}
+
+  const existingTypebot = await prisma.typebot.findFirst({
+    where: {
+      id: typebot?.id,
+    },
+    select: {
+      id: true,
+      settings: true,
+    },
+  })
+
+  if (!existingTypebot?.id) {
+    console.error('Typebot not found')
+    return {
+      message: 'Message received',
+    }
+  }
+
+  const credentials = await getCredentials({
+    credentialsId,
+    isPreview,
+    typebot: {
+      ...existingTypebot,
+      settings: existingTypebot.settings as {
+        baseUrl?: string | undefined
+        previewPhoneNumber?: string | undefined
+        systemUserAccessToken?: string | undefined
+        isEnabled?: boolean | undefined
+      },
+    },
+  })
 
   if (!credentials) {
     console.error('Could not find credentials')
@@ -61,11 +94,10 @@ export const resumeWhatsAppFlow = async ({
 
   const reply = await getIncomingMessageContent({
     message: receivedMessage,
+    typebotId: typebot?.id,
     workspaceId,
     accessToken: credentials?.systemUserAccessToken,
   })
-
-  const session = await getSession(sessionId)
 
   const isSessionExpired =
     session &&
@@ -111,7 +143,11 @@ export const resumeWhatsAppFlow = async ({
     isFirstChatChunk,
     typingEmulation: newSessionState.typingEmulation,
     clientSideActions,
-    credentials,
+    credentials: {
+      ...credentials,
+      baseUrl: (existingTypebot?.settings as Settings)?.whatsAppCloudApi
+        ?.baseUrl,
+    },
     state: newSessionState,
   })
 
@@ -137,10 +173,12 @@ export const resumeWhatsAppFlow = async ({
 
 const getIncomingMessageContent = async ({
   message,
+  typebotId,
   workspaceId,
   accessToken,
 }: {
   message: WhatsAppIncomingMessage
+  typebotId?: string
   workspaceId?: string
   accessToken: string
 }): Promise<Reply> => {
@@ -156,6 +194,7 @@ const getIncomingMessageContent = async ({
     case 'audio':
     case 'video':
     case 'image':
+      if (!typebotId) return
       let mediaId: string | undefined
       if (message.type === 'video') mediaId = message.video.id
       if (message.type === 'image') mediaId = message.image.id
@@ -171,19 +210,29 @@ const getIncomingMessageContent = async ({
 const getCredentials = async ({
   credentialsId,
   isPreview,
+  typebot,
 }: {
   credentialsId?: string
   isPreview: boolean
+  typebot?: {
+    id: string
+    settings: NonNullable<Settings['whatsAppCloudApi']>
+  }
 }): Promise<WhatsAppCredentials['data'] | undefined> => {
   if (isPreview) {
-    if (
-      !env.META_SYSTEM_USER_TOKEN ||
-      !env.WHATSAPP_PREVIEW_FROM_PHONE_NUMBER_ID
-    )
-      return
+    const whatsAppPreviewPhoneNumberId = typebot?.settings?.isEnabled
+      ? typebot.settings.previewPhoneNumber
+      : env.WHATSAPP_PREVIEW_FROM_PHONE_NUMBER_ID
+
+    const whatsAppSystemUserToken = typebot?.settings?.isEnabled
+      ? typebot.settings.systemUserAccessToken
+      : env.META_SYSTEM_USER_TOKEN
+
+    if (!whatsAppSystemUserToken || !whatsAppPreviewPhoneNumberId) return
+
     return {
-      systemUserAccessToken: env.META_SYSTEM_USER_TOKEN,
-      phoneNumberId: env.WHATSAPP_PREVIEW_FROM_PHONE_NUMBER_ID,
+      systemUserAccessToken: whatsAppSystemUserToken,
+      phoneNumberId: whatsAppPreviewPhoneNumberId,
     }
   }
 

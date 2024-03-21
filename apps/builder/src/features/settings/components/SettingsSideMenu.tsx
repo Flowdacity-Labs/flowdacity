@@ -13,17 +13,24 @@ import {
   CodeIcon,
   LockedIcon,
   MoreVerticalIcon,
+  WhatsappIcon,
 } from '@/components/icons'
+import { UnlockPlanAlertInfo } from '@/components/UnlockPlanAlertInfo'
+import { PlanTag } from '@/features/billing/components/PlanTag'
 import { Settings } from '@typebot.io/schemas'
 import React from 'react'
 import { GeneralSettingsForm } from './GeneralSettingsForm'
 import { MetadataForm } from './MetadataForm'
 import { TypingEmulationForm } from './TypingEmulationForm'
 import { useTypebot } from '@/features/editor/providers/TypebotProvider'
+import { useWorkspace } from '@/features/workspace/WorkspaceProvider'
+import { hasProPerks } from '@/features/billing/helpers/hasProPerks'
 import { SecurityForm } from './SecurityForm'
+import { WhatsappCloudProviderForm } from './WhatsappCloudProviderForm'
 
 export const SettingsSideMenu = () => {
   const { typebot, updateTypebot } = useTypebot()
+  const { workspace } = useWorkspace()
 
   const updateTypingEmulation = (
     typingEmulation: Settings['typingEmulation']
@@ -37,6 +44,14 @@ export const SettingsSideMenu = () => {
     typebot &&
     updateTypebot({
       updates: { settings: { ...typebot.settings, security } },
+    })
+
+  const updateWhatsappCloudApi = (
+    whatsAppCloudApi: Settings['whatsAppCloudApi']
+  ) =>
+    typebot &&
+    updateTypebot({
+      updates: { settings: { ...typebot.settings, whatsAppCloudApi } },
     })
 
   const handleGeneralSettingsChange = (general: Settings['general']) =>
@@ -130,6 +145,32 @@ export const SettingsSideMenu = () => {
                 metadata={typebot.settings.metadata}
                 onMetadataChange={handleMetadataChange}
               />
+            )}
+          </AccordionPanel>
+        </AccordionItem>
+        <AccordionItem>
+          <AccordionButton py={6}>
+            <HStack flex="1" pl={2}>
+              <WhatsappIcon />
+              <Heading fontSize="lg">Whatsapp Cloud API</Heading>
+            </HStack>
+            <AccordionIcon />
+          </AccordionButton>
+          <AccordionPanel pb={4} px="6">
+            {hasProPerks(workspace) ? (
+              <>
+                {typebot && (
+                  <WhatsappCloudProviderForm
+                    whatsAppCloudApi={typebot.settings.whatsAppCloudApi}
+                    onUpdate={updateWhatsappCloudApi}
+                  />
+                )}
+              </>
+            ) : (
+              <UnlockPlanAlertInfo excludedPlans={['STARTER']}>
+                Upgrade to <PlanTag plan="PRO" /> to be able to enable WhatsApp
+                integration.
+              </UnlockPlanAlertInfo>
             )}
           </AccordionPanel>
         </AccordionItem>
