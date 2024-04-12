@@ -1,4 +1,4 @@
-# [Typebot](https://www.flowdacity.com 'Typebot')
+# [Flowdacity](https://www.flowdacity.com 'Flowdacity')
 
 ![WordPress version](https://img.shields.io/wordpress/plugin/v/typebot.svg) ![WordPress Rating](https://img.shields.io/wordpress/plugin/r/typebot.svg) ![WordPress Downloads](https://img.shields.io/wordpress/plugin/dt/typebot.svg)
 
